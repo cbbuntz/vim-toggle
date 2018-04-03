@@ -176,3 +176,4 @@ nnoremap <silent> <M-t> :ToggleWord<CR>
 nnoremap <silent> <leader><M-t> :call AddToggle(@0, @-)<CR>
 vnoremap <silent> <M-t> :<C-u>ToggleSelection<CR>
 " vnoremap <silent> p p:call AddToggle(@0, @-)<CR>
+
