@@ -2,9 +2,15 @@ let g:toggleopts = {'overwrite': 0, 'ignorecase': 1}
 let g:toggledict = {}
 let s:path = resolve(expand('<sfile>:p'))
 exe 'so '.substitute(s:path, '\.vim$', '_words.vim', '')
+exe 'so '.substitute(s:path, '\.vim$', '_subword.vim', '')
 
 fu! InitToggleDict()
   for i in g:togglewords
+    for j in range(0,len(i)-1)
+      let g:toggledict[i[j-1]] = i[j]
+    endfor
+  endfor
+  for i in g:togglepunct
     for j in range(0,len(i)-1)
       let g:toggledict[i[j-1]] = i[j]
     endfor
@@ -15,30 +21,6 @@ call InitToggleDict()
 fu! s:ToggleExist(s)
   return (a:s =~ '\S') && (index(values(g:toggledict), a:s) != -1)
 endf
-
-fu! InnerSubword()
-  if getline('.')[col('.') - 1] =~ '\s'
-    normal! w
-  endif
-  if (getline('.')[col('.') - 1:col('.')] =~ '\([[:punct:][:space:]]\+$\)\|\(\(\_s\|\<\)\S\(\_s\|\>\)\)')
-    normal v
-  endif
-  call search(g:subwordend, 'cW', line('.'))
-  call setpos("'>", getcurpos())
-  call search(g:subwordstart, 'bcW', line('.'))
-  call setpos("'<", getcurpos())
-  if mode() =~ '[vns]'
-    normal! v`>o`<
-  else
-    normal! `>v`<
-  endif
-endf
-
-vnoremap <silent> <C-s> :<C-u>call InnerSubword()<CR>
-onoremap <silent> <C-s> :call InnerSubword()<CR>
-nnoremap <silent> d<C-s> d:call InnerSubword()<CR>
-nnoremap <silent> y<C-s> y:call InnerSubword()<CR>
-nnoremap <silent> c<C-s> c:call InnerSubword()<CR>
 
 fu! s:DetectCase(...)
   if a:1 =~? '^\l\+$'
@@ -53,16 +35,15 @@ fu! s:DetectCase(...)
 endf
 " command! -register DetectCase call s:DetectCase()
 
+" strip trailing/preceding whitespace
 fu! s:StripWhitespace(s)
   return substitute(a:s,'^\s*\(\S\+\)\s*$','\1','')
 endf
 
-" strip trailing/preceding whitespace,
 " remove delete / backspace characters
 " portability questionable
 fu! s:InsertCleanUp(s)
   let s = s:StripWhitespace(a:s)
-
   for i in range(0,50)
     if s =~ "\<BS>\\|\<Del>\\|\<C-w>"
       let s = substitute(s,'\([^bD]kb\)\|\(\kD[^bD]\)','','g')
@@ -95,7 +76,6 @@ fu! AddToggle(...)
   else
     return
   endif
-    
   " No multi-word toggles
   if a =~ '\s'
     return
@@ -110,7 +90,6 @@ fu! AddToggle(...)
     let g:toggledict[b] = a
     return
   endif
-
   "  add to toggle ring
   if s:ToggleExist(a)
     let g:toggledict[b] = g:toggledict[a]
@@ -128,6 +107,17 @@ fu! AddToggle(...)
 endf
 au InsertLeave * call AddToggle()
 
+fu! ToggleFindBrute(key,ar)
+  for i in a:ar
+    for j in range(0,len(i)-1)
+      if a:key =~ '\V'.i[j]
+        return substitute(i[(j+1) % len(i)], '&', '\\\&', 'g')
+      end
+    endfor
+  endfor
+  return a:key
+endf
+
 fu! ToggleSelection()
   let lin = getline('.')
   let ccol = col('.') - 1
@@ -138,6 +128,13 @@ fu! ToggleSelection()
     exe "normal! \<C-A>`["
     return
   endif
+  
+  " if sel =~ '[[:punct:]]'
+  "   let sub = ToggleFindBrute(sel, g:togglepunct)
+  "   exe 's:\V'. sel .':'. sub .':'
+  "   exe 'normal! '. (ccol+1) .'|'
+  "   return
+  " endif
 
   " No multi-word, no blanks
   if sel !~ '\S'
@@ -160,7 +157,7 @@ fu! ToggleSelection()
     endif
 
     let prevcol = col('.')
-    exe 'silent! :s;\(\%#\V' . sel . '\);' . word . ';'
+    exe 'silent! :s;\(\%#\V' . sel . '\);' . substitute(word, '&', '\\\&', 'g') . ';'
     exe 'normal! '.prevcol.'|'
   endif
 endf
@@ -171,6 +168,9 @@ fu! ToggleWord()
   call ToggleSelection()
 endf
 command! -register ToggleWord call ToggleWord()
+
+nmap <Plug>ToggleWord :call ToggleWord()<CR>
+vmap <Plug>ToggleWord :<C-u>ToggleSelection()<CR>
 
 nnoremap <silent> <M-t> :ToggleWord<CR>
 nnoremap <silent> <leader><M-t> :call AddToggle(@0, @-)<CR>
