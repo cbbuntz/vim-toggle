@@ -45,7 +45,8 @@ The list of words is contained in `plugin/toggle_words.vim` if you wish to modif
     vmap <Plug>VisualSubwordExpand
     nmap <Plug>ToggleWord
     vmap <Plug>ToggleWord
+    nmap <Plug>ToggleWordPrev
+    vmap <Plug>ToggleWordPrev
     
 ## Plans
-
 Make toggles adapt to filetype

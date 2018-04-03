@@ -33,9 +33,7 @@ fu! s:DetectCase(...)
     return 'lower'
   endif
 endf
-" command! -register DetectCase call s:DetectCase()
 
-" strip trailing/preceding whitespace
 fu! s:StripWhitespace(s)
   return substitute(a:s,'^\s*\(\S\+\)\s*$','\1','')
 endf
@@ -66,7 +64,17 @@ fu! GetLastChange()
   return join(lines, '')
 endf
 
-fu! AddToggle(...)
+fu! ToggleNew(a,b,flag)
+  if a:flag == 0
+    let g:toggledict[a:a] = a:b
+    let g:toggledict[a:b] = a:a
+  elseif a:flag == 1
+    let g:toggledict[a:b] = g:toggledict[a:a]
+    let g:toggledict[a:a] = a:b
+  endif
+endf
+
+fu! ToggleAdd(...)
   if (a:0 >= 2)
     let a = s:StripWhitespace(a:1)
     let b = s:StripWhitespace(a:2)
@@ -76,36 +84,23 @@ fu! AddToggle(...)
   else
     return
   endif
-  " No multi-word toggles
-  if a =~ '\s'
+  
+  if a =~ '\s' " No multi-word toggles
     return
-  end
-  " don't overwrite
+  endif
+  
   if !g:toggleopts['overwrite'] && s:ToggleExist(a) && s:ToggleExist(b)
     return
+  elseif g:toggleopts['overwrite']
+    return ToggleNew(a,b,0)
+  elseif s:ToggleExist(a)
+    return ToggleNew(a,b,1)
+  elseif s:ToggleExist(b)
+    return ToggleNew(b,a,1)
   endif
-
-  if g:toggleopts['overwrite']
-    let g:toggledict[a] = b
-    let g:toggledict[b] = a
-    return
-  endif
-  "  add to toggle ring
-  if s:ToggleExist(a)
-    let g:toggledict[b] = g:toggledict[a]
-    let g:toggledict[a] = b
-    return
-  endif
-  if s:ToggleExist(b)
-    let g:toggledict[a] = g:toggledict[b]
-    let g:toggledict[b] = a
-    return
-  endif
-  " Make binary toggle
-  let g:toggledict[a] = b
-  let g:toggledict[b] = a
+  return ToggleNew(a,b,0)
 endf
-au InsertLeave * call AddToggle()
+au InsertLeave * call ToggleAdd()
 
 fu! ToggleFindBrute(key,ar)
   for i in a:ar
@@ -118,24 +113,34 @@ fu! ToggleFindBrute(key,ar)
   return a:key
 endf
 
-fu! ToggleSelection()
+fu! TogglePrevious(w)
+  if (index(values(g:toggledict), a:w) == -1)
+    return a:w
+  endif
+  let word = a:w
+  while (g:toggledict[word] != a:w)
+    let word = g:toggledict[word]
+  endwhile
+  return word
+endf
+
+fu! ToggleSelection(...)
+  noau
+  let rev = (a:0 && (a:1 == -1))
   let lin = getline('.')
   let ccol = col('.') - 1
   let sel = lin[col("'<") - 1: col("'>") - 1]
   normal! "_ym`
 
   if sel =~ '^\d\+$'
-    exe "normal! \<C-A>`["
+    if rev
+      exe "normal! \<C-X>`["
+    else
+      exe "normal! \<C-A>`["
+    endif
     return
   endif
   
-  " if sel =~ '[[:punct:]]'
-  "   let sub = ToggleFindBrute(sel, g:togglepunct)
-  "   exe 's:\V'. sel .':'. sub .':'
-  "   exe 'normal! '. (ccol+1) .'|'
-  "   return
-  " endif
-
   " No multi-word, no blanks
   if sel !~ '\S'
     return
@@ -151,7 +156,7 @@ fu! ToggleSelection()
   if (index(values(g:toggledict), sel) == -1)
     return
   else
-    let word = g:toggledict[sel]
+    let word = ((rev) ? (TogglePrevious(sel)) : (g:toggledict[sel]))
     if a:case !~? 'lower'
       let word = substitute(word, '\l\+', ((a:case =~? 'capitalized') ? '\u&' : '\U&'), '')
     endif
@@ -163,17 +168,24 @@ fu! ToggleSelection()
 endf
 command! -register ToggleSelection call ToggleSelection()
 
-fu! ToggleWord()
+fu! ToggleWord(...)
   call InnerSubword()
-  call ToggleSelection()
+  call ToggleSelection(a:1)
 endf
-command! -register ToggleWord call ToggleWord()
+command! -register ToggleWord call ToggleWord(1)
+command! -register ToggleWordPrev call ToggleWord(-1)
+command! -register ToggleWordVisual call ToggleSelection(1)
+command! -register ToggleWordPrevVisual call ToggleSelection(-1)
 
-nmap <Plug>ToggleWord :call ToggleWord()<CR>
-vmap <Plug>ToggleWord :<C-u>ToggleSelection()<CR>
+nmap <Plug>ToggleWord :ToggleWord<CR>
+nmap <Plug>ToggleWordPrev :ToggleWordPrev<CR>
+vmap <Plug>ToggleWord :<C-u>ToggleWordVisual<CR>
+vmap <Plug>ToggleWordPrev :<C-u>ToggleWordPrevVisual<CR>
 
 nnoremap <silent> <M-t> :ToggleWord<CR>
-nnoremap <silent> <leader><M-t> :call AddToggle(@0, @-)<CR>
-vnoremap <silent> <M-t> :<C-u>ToggleSelection<CR>
-" vnoremap <silent> p p:call AddToggle(@0, @-)<CR>
+nnoremap <silent> <M-T> :ToggleWordPrev<CR>
+nnoremap <silent> <leader><M-t> :call ToggleAdd(@0, @-)<CR>
+vnoremap <silent> <M-t> :<C-u>ToggleWordVisual<CR>
+vnoremap <silent> <M-t> :<C-u>ToggleWordPrevVisual<CR>
+" vnoremap <silent> p p:call ToggleAdd(@0, @-)<CR>
 

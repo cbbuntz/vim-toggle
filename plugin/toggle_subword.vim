@@ -37,6 +37,7 @@ fu! VisualSubwordExpand() range
 endf
 
 fu! InnerSubword()
+  noau
   if getline('.')[col('.') - 1] =~ '\s'
     normal! w
   endif
