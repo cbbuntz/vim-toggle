@@ -194,6 +194,12 @@ fu! AddToggle()
       return
     endif
     
+    if g:toggleopts['overwrite']
+      let g:toggledict[a] = b
+      let g:toggledict[b] = a
+      return
+    endif
+        
    "  add to toggle ring
     if ToggleExist(a)
       let g:toggledict[b] = g:toggledict[a]
@@ -258,4 +264,3 @@ command! -register ToggleWord call ToggleWord()
 
 nnoremap <silent> <M-t> :ToggleWord<CR>
 vnoremap <silent> <M-t> :<C-u>ToggleSelection<CR>
-
