@@ -7,7 +7,7 @@ When called, the current or nearest sub-word (camelCase or snake_case) is detect
 ## Notes
 By default, word comparison is case insensitive, but the case of the new word is matched to the previous.
 
-A dictionary is included for common words, but is automatically updated as work. If either the newly typed word or previous word are not found in the dictionary, they are added to a toggle ring. If they both exist, nothing is updated. You can enable overwriting of dictionary entries with `let g:toggleopts['overwrite'] = 1`
+A dictionary is included for common words, but is automatically updated as work. If either the newly typed word or previous word are not found in the dictionary, they are inserted into to a toggle ring. If they both exist, nothing is updated. You can enable overwriting of dictionary entries with `let g:toggleopts['overwrite'] = 1`, which also has the side effect making all new toggles binary.
 
 ## Default mappings
 
