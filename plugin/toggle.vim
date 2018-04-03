@@ -1,115 +1,7 @@
-let g:togglewords = [
-      \['zero',  'one',  'two',  'three',  'four',  'five',  'six',  'seven',  'eight',  'nine',  'ten',
-      \'eleven',  'twelve',  'thirteen', 'fourteen',  'fifteen',  'sixteen',  'seventeen',  'eighteen',  'nineteen'],
-      \['import', 'export'],
-      \['join', 'split'],
-      \['enable', 'disable'],
-      \['enabled', 'disabled'],
-      \['end', 'begin'],
-      \['on', 'off'],
-      \['true', 'false'],
-      \['yes', 'no'],
-      \['(', ')'],
-      \['[', ']'],
-      \['{', '}'],
-      \['*', '/'],
-      \['&', '|'],
-      \['&&', '||'],
-      \['+', '-'],
-      \['/', '*'],
-      \['++', '--'],
-      \['+=', '-='],
-      \['*=', '/='],
-      \['<', '>'],
-      \['<<', '>>'],
-      \['<=', '>='],
-      \['==', '!='],
-      \['===', '!=='],
-      \['get', 'set'],
-      \['short', 'long'],
-      \['absolute', 'relative'],
-      \['high', 'low'],
-      \['horizontal', 'vertical'],
-      \['in', 'out'],
-      \['inner', 'outer'],
-      \['left', 'right'],
-      \['top', 'bottom'],
-      \['up', 'down'],
-      \['forward', 'back'],
-      \['black', 'gray', 'white'],
-      \['dark', 'light'],
-      \['join', 'split'],
-      \['pop', 'push'],
-      \['shift', 'unshift'],
-      \['atan', 'tan'],
-      \['ceil', 'floor'],
-      \['cos', 'sin'],
-      \['min', 'max'],
-      \['minor', 'major'],
-      \['copy', 'cut', 'paste'],
-      \['keydown', 'keyup'],
-      \['mousedown', 'mouseup'],
-      \['mouseenter', 'mouseleave'],
-      \['head', 'body'],
-      \['header', 'footer'],
-      \['ol', 'ul'],
-      \['tr', 'td'],
-      \['activate', 'deactivate'],
-      \['add', 'remove'],
-      \['background', 'foreground'],
-      \['available', 'unavailable'],
-      \['before', 'after'],
-      \['client', 'server'],
-      \['connect', 'disconnect'],
-      \['connected', 'disconnected'],
-      \['first', 'last'],
-      \['from', 'to'],
-      \['input', 'output'],
-      \['install', 'uninstall'],
-      \['key', 'value'],
-      \['online', 'offline'],
-      \['open', 'close'],
-      \['parent', 'child'],
-      \['positive', 'negative'],
-      \['prefix', 'suffix'],
-      \['previous', 'next'],
-      \['public', 'private'],
-      \['req', 'res'],
-      \['request', 'response'],
-      \['row', 'column'],
-      \['show', 'hide'],
-      \['source', 'destination'],
-      \['start', 'stop'],
-      \['valid', 'invalid'],
-      \['visible', 'hidden'],
-      \['valid', 'invalid'], 
-      \['width', 'height'],
-      \['x', 'y'],
-      \['fu', 'endf'],
-      \['fun', 'endfun'],
-      \['function', 'endfunction'],
-      \['if', 'endif'],
-      \['for', 'endfor'],
-      \['while', 'endwhile'],
-      \['try', 'catch', 'throw', 'endtry'],
-      \['function', 'endfunction'],
-      \['fun', 'endfun'],
-      \['if', 'endif', 'fi'],
-      \['case', 'esac'],
-      \['for', 'endfor', 'done'],
-      \['lower', 'upper'],
-      \['lowercase', 'uppercase'],
-      \['try', 'catch', 'throw'],
-      \['and', 'or', 'xor', 'not', 'nand'],
-      \['win', 'lose'],
-      \['malloc', 'calloc', 'free'],
-      \['nan', 'inf'],
-      \['red', 'orange', 'yellow',  'green', 'cyan', 'blue',  'purple', 'magenta'],
-      \['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-      \'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'] ]
-
+let g:toggleopts = {'overwrite': 0, 'ignorecase': 1}
 let g:toggledict = {}
-let g:toggleopts = {'overwrite': 0, 'ignorecase': 0}
+let s:path = resolve(expand('<sfile>:p'))
+exe 'so '.substitute(s:path, '\.vim$', '_words.vim', '')
 
 fu! InitToggleDict()
   for i in g:togglewords
@@ -222,22 +114,22 @@ au InsertLeave * call AddToggle()
 fu! ToggleSelection()
   let lin = getline('.')
   let ccol = col('.') - 1
-  let ch = lin[col("'<") - 1: col("'>") - 1]
+  let sel = lin[col("'<") - 1: col("'>") - 1]
   normal! "_ym`
 
-  if ch =~ '^\d\+$'
+  if sel =~ '^\d\+$'
     exe "normal! \<C-A>`["
     return
   endif
 
-  if ch =~ '^\s\+$'
+  if sel =~ '^\s\+$'
     return
   endif
 
-  let a:case = (DetectCase(ch))
+  let a:case = (DetectCase(sel))
 
-  if !g:toggleopts['ignorecase']
-    let sel = substitute(ch, '\u', '\L&', 'g')
+  if g:toggleopts['ignorecase']
+    let sel = substitute(sel, '\u', '\L&', 'g')
   endif
 
   " No toggle set for sel
