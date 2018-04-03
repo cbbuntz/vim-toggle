@@ -5,7 +5,7 @@ let g:togglewords = [
       \['join', 'split'],
       \['enable', 'disable'],
       \['enabled', 'disabled'],
-      \['start', 'end', 'begin'],
+      \['end', 'begin'],
       \['on', 'off'],
       \['true', 'false'],
       \['yes', 'no'],
@@ -95,15 +95,18 @@ let g:togglewords = [
       \['function', 'endfunction'],
       \['fun', 'endfun'],
       \['if', 'endif', 'fi'],
-      \['for', 'endfor'],
+      \['case', 'esac'],
+      \['for', 'endfor', 'done'],
       \['lower', 'upper'],
       \['lowercase', 'uppercase'],
       \['try', 'catch', 'throw'],
       \['and', 'or', 'xor', 'not', 'nand'],
       \['win', 'lose'],
       \['malloc', 'calloc', 'free'],
-      \['gray', 'maroon', 'red', 'purple', 'fuchsia', 'green', 'yellow', 'blue', 'aqua'],
-      \['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'] ]
+      \['nan', 'inf'],
+      \['red', 'orange', 'yellow',  'green', 'cyan', 'blue',  'purple', 'magenta'],
+      \['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+      \'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'] ]
 
 let g:toggledict = {}
 let g:toggleopts = {'overwrite': 0, 'ignorecase': 0}
@@ -122,7 +125,10 @@ fu! ToggleExist(s)
 endf
 
 fu! InnerSubword()
-  if (getline('.')[col('.') - 1:col('.')] =~ '\([[:punct:][:space:]]\+$\)\|\(\s\S\s\)')
+  if getline('.')[col('.') - 1] =~ '\s'
+    normal! w
+  endif
+  if (getline('.')[col('.') - 1:col('.')] =~ '\([[:punct:][:space:]]\+$\)\|\(\(\_s\|\<\)\S\(\_s\|\>\)\)')
     normal v
   endif
   call search(g:subwordend, 'cW', line('.'))
@@ -215,24 +221,23 @@ au InsertLeave * call AddToggle()
 
 fu! ToggleSelection()
   let lin = getline('.')
-  let col = col('.') - 1
-  normal! "xym`
+  let ccol = col('.') - 1
+  let ch = lin[col("'<") - 1: col("'>") - 1]
+  normal! "_ym`
 
-  if @x =~? '^\d\+$'
-    exe "normal! \<C-A>"
+  if ch =~ '^\d\+$'
+    exe "normal! \<C-A>`["
     return
   endif
 
-  if @x =~ '^\s\+$'
+  if ch =~ '^\s\+$'
     return
   endif
 
-  let a:case = (DetectCase(@x))
+  let a:case = (DetectCase(ch))
 
-  if g:toggleopts['ignorecase']
-    let sel = @x
-  else 
-    let sel = substitute(@x, '\u', '\L&', 'g')
+  if !g:toggleopts['ignorecase']
+    let sel = substitute(ch, '\u', '\L&', 'g')
   endif
 
   " No toggle set for sel
