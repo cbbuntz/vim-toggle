@@ -186,6 +186,6 @@ nnoremap <silent> <M-t> :ToggleWord<CR>
 nnoremap <silent> <M-T> :ToggleWordPrev<CR>
 nnoremap <silent> <leader><M-t> :call ToggleAdd(@0, @-)<CR>
 vnoremap <silent> <M-t> :<C-u>ToggleWordVisual<CR>
-vnoremap <silent> <M-t> :<C-u>ToggleWordPrevVisual<CR>
+vnoremap <silent> <M-T> :<C-u>ToggleWordPrevVisual<CR>
 " vnoremap <silent> p p:call ToggleAdd(@0, @-)<CR>
 
