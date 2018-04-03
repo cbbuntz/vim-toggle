@@ -1,8 +1,8 @@
-# vim_toggle
+# vim-toggle
 A easy, fast word toggler.
 
 ## How it works
-When called, the current or nearest sub-word (camelCase or snake_case) is detected and used as a key for a dictionary for an alternate word. If you use `ciw` or similar to change a word to another, the words are added to the dictionary. If you change the new word again, the word is inserted into the toggle ring, so it will alternate between three (or more) words.
+When called, the current or nearest sub-word (camelCase or snake_case) is detected and used as a key to a dictionary containing complementary words. If you use `ciw` or similar to change a word to another, the words are added to the dictionary. If you change the new word again, the word is inserted into the toggle ring, so it will alternate between three (or more) words.
 
 ## Notes
 By default, word comparison is case insensitive, but the case of the new word is matched to the previous.
