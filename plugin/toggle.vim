@@ -12,7 +12,7 @@ fu! InitToggleDict()
 endf
 call InitToggleDict()
 
-fu! ToggleExist(s)
+fu! s:ToggleExist(s)
   return (a:s =~ '\S') && (index(values(g:toggledict), a:s) != -1)
 endf
 
@@ -40,7 +40,7 @@ nnoremap <silent> d<C-s> d:call InnerSubword()<CR>
 nnoremap <silent> y<C-s> y:call InnerSubword()<CR>
 nnoremap <silent> c<C-s> c:call InnerSubword()<CR>
 
-fu! DetectCase(...)
+fu! s:DetectCase(...)
   if a:1 =~? '^\l\+$'
     return 'lower'
   elseif a:1 =~? '^\u\+$'
@@ -51,13 +51,17 @@ fu! DetectCase(...)
     return 'lower'
   endif
 endf
-command! -register DetectCase call DetectCase()
+" command! -register DetectCase call s:DetectCase()
+
+fu! s:StripWhitespace(s)
+  return substitute(a:s,'^\s*\(\S\+\)\s*$','\1','')
+endf
 
 " strip trailing/preceding whitespace,
 " remove delete / backspace characters
 " portability questionable
-fu! InsertCleanUp(s)
-  let s = substitute(a:s,'^\s*\(\S\+\)\s*$','\1','')
+fu! s:InsertCleanUp(s)
+  let s = s:StripWhitespace(a:s)
 
   for i in range(0,50)
     if s =~ "\<BS>\\|\<Del>\\|\<C-w>"
@@ -74,40 +78,53 @@ fu! InsertCleanUp(s)
   return s
 endf
 
-fu! AddToggle()
-  if v:operator =~? 'c'
-    let a = InsertCleanUp(@-)
-    let b = InsertCleanUp(@.)
-    " No multi-word toggles
-    if a =~ '\s'
-      return
-    end
-    " don't overwrite
-    if !g:toggleopts['overwrite'] && ToggleExist(a) && ToggleExist(b)
-      return
-    endif
+fu! GetLastChange()
+  let lines = getline("'[", "']")
+  let lines[-1] = lines[-1][0:col("']") - 2]
+  let lines[0] = lines[0][(col("'[") - 1):-1]
+  return join(lines, '')
+endf
+
+fu! AddToggle(...)
+  if (a:0 >= 2)
+    let a = s:StripWhitespace(a:1)
+    let b = s:StripWhitespace(a:2)
+  elseif v:operator =~? 'c'
+    let a = s:StripWhitespace(@-)
+    let b = s:InsertCleanUp(GetLastChange())
+  else
+    return
+  endif
     
-    if g:toggleopts['overwrite']
-      let g:toggledict[a] = b
-      let g:toggledict[b] = a
-      return
-    endif
-        
-   "  add to toggle ring
-    if ToggleExist(a)
-      let g:toggledict[b] = g:toggledict[a]
-      let g:toggledict[a] = b
-      return
-    endif
-    if ToggleExist(b)
-      let g:toggledict[a] = g:toggledict[b]
-      let g:toggledict[b] = a
-      return
-    endif
-    " Make binary toggle
+  " No multi-word toggles
+  if a =~ '\s'
+    return
+  end
+  " don't overwrite
+  if !g:toggleopts['overwrite'] && s:ToggleExist(a) && s:ToggleExist(b)
+    return
+  endif
+
+  if g:toggleopts['overwrite']
     let g:toggledict[a] = b
     let g:toggledict[b] = a
+    return
   endif
+
+  "  add to toggle ring
+  if s:ToggleExist(a)
+    let g:toggledict[b] = g:toggledict[a]
+    let g:toggledict[a] = b
+    return
+  endif
+  if s:ToggleExist(b)
+    let g:toggledict[a] = g:toggledict[b]
+    let g:toggledict[b] = a
+    return
+  endif
+  " Make binary toggle
+  let g:toggledict[a] = b
+  let g:toggledict[b] = a
 endf
 au InsertLeave * call AddToggle()
 
@@ -122,11 +139,12 @@ fu! ToggleSelection()
     return
   endif
 
-  if sel =~ '^\s\+$'
+  " No multi-word, no blanks
+  if sel !~ '\S'
     return
   endif
 
-  let a:case = (DetectCase(sel))
+  let a:case = (s:DetectCase(sel))
 
   if g:toggleopts['ignorecase']
     let sel = substitute(sel, '\u', '\L&', 'g')
@@ -155,4 +173,6 @@ endf
 command! -register ToggleWord call ToggleWord()
 
 nnoremap <silent> <M-t> :ToggleWord<CR>
+nnoremap <silent> <leader><M-t> :call AddToggle(@0, @-)<CR>
 vnoremap <silent> <M-t> :<C-u>ToggleSelection<CR>
+" vnoremap <silent> p p:call AddToggle(@0, @-)<CR>
