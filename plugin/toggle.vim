@@ -1,22 +1,57 @@
 let g:toggleopts = {'overwrite': 0, 'ignorecase': 1}
-let g:toggledict = {}
+if !(exists('g:toggledict'))
+  let g:toggledict = {}
+endif
+
 let s:path = resolve(expand('<sfile>:p'))
 exe 'so '.substitute(s:path, '\.vim$', '_words.vim', '')
 exe 'so '.substitute(s:path, '\.vim$', '_subword.vim', '')
 
-fu! InitToggleDict()
-  for i in g:togglewords
-    for j in range(0,len(i)-1)
-      let g:toggledict[i[j-1]] = i[j]
-    endfor
-  endfor
-  for i in g:togglepunct
+fu! s:AddList(list)
+  for i in a:list
     for j in range(0,len(i)-1)
       let g:toggledict[i[j-1]] = i[j]
     endfor
   endfor
 endf
+
+fu! s:AddListBuf(list)
+  for i in a:list
+    for j in range(0,len(i)-1)
+      let b:toggledict[i[j-1]] = i[j]
+    endfor
+  endfor
+endf
+
+fu! InitToggleDictFiletype()
+  if !(exists('b:toggledict'))
+    let b:toggledict = copy(g:toggledict)
+  endif
+  if &filetype =~ 'sh\|bash\|zsh\|profile'
+    call s:AddListBuf(g:togglewords_shell)
+  elseif &filetype =~ 'rb'
+    call s:AddListBuf(g:togglewords_ruby)
+  elseif &filetype =~ 'vim'
+    call s:AddListBuf(g:togglewords_vim)
+  endif
+endf
+
+fu! InitToggleDict()
+  call s:AddList(g:togglewords)
+  call s:AddList(g:togglewords_universal)
+  call s:AddList(g:togglepunct)
+  let b:toggledict = copy(g:toggledict)
+endf
 call InitToggleDict()
+
+" au FileType *.vim call <SID>AddListBuf(g:togglewords_vim)
+" au FileType *.rb call <SID>AddListBuf(g:togglewords_ruby)
+" au FileType *.sh call <SID>AddListBuf(g:togglewords_shell)
+" au FileType *.zsh* call <SID>AddListBuf(g:togglewords_shell)
+" au FileType *.bash* call <SID>AddListBuf(g:togglewords_shell)
+" au FileType *.profile call <SID>AddListBuf(g:togglewords_shell)
+au FileType * call InitToggleDictFiletype()
+au BufRead * let b:toggledict = {}
 
 fu! s:ToggleExist(s)
   return (a:s =~ '\S') && (index(values(g:toggledict), Downcase(a:s)) != -1)
@@ -91,14 +126,6 @@ fu! ToggleNew(a,b,flag)
   endif
 endf
 
-" fu! LinkedListDelete(dict, a, c)
-" YyyJjjUuuUuu
-"   let tempdict = {}
-"   return (a:s =~ '\S') && (index(values(g:toggledict), a:s) != -1)
-"   " if eval(dict."['".a:a."']")
-"   s:ToggleExist(a)
-" endf
-
 fu! ToggleAdd(...)
   if (a:0 >= 2)
     let a = s:StripWhitespace(a:1)
@@ -112,7 +139,7 @@ fu! ToggleAdd(...)
 
   let a = Downcase(a)
   let b = Downcase(b)
-  
+
   if a =~ '\s' " No multi-word toggles
     return
   endif
@@ -142,6 +169,8 @@ fu! ToggleFindBrute(key,ar)
 endf
 
 fu! TogglePrevious(w)
+  call extend(b:toggledict, g:toggledict, "keep")
+
   if (index(values(g:toggledict), a:w) == -1)
     return a:w
   endif
@@ -152,13 +181,55 @@ fu! TogglePrevious(w)
   return word
 endf
 
+fu! RotLetter(...)
+  let rev = (a:0 && (a:1 != 0))
+  noau
+ruby <<RB
+  ln = VIM::Buffer.current.line
+  l, c = VIM::Window.current.cursor
+  if VIM::eval('rev') == 1
+    ln[c] = (ln[c].ord-1).chr
+    ln[c] = (ln[c].ord+26).chr if ln[c] =~ /[@`]/
+  else
+    ln[c] = ln[c].succ[0]
+  end
+  VIM::Buffer.current.line = ln
+  VIM::Window.current.cursor = [l,c]
+RB
+  if exists("g:loaded_repeat")
+    call repeat#set(":call RotLetter()\<CR>")
+  endif
+endf
+ 
+fu! GetToggleWord(sel)
+
+  if (index(values(b:toggledict), a:sel) != -1)
+    " let word = ((rev) ? (TogglePrevious(a:sel)) : (b:toggledict[a:sel]))
+    let word = b:toggledict[a:sel]
+  elseif (index(values(g:toggledict), a:sel) != -1)
+    " let word = ((rev) ? (TogglePrevious(a:sel)) : (g:toggledict[a:sel]))
+    let word = g:toggledict[a:sel]
+  else
+    return a:sel
+  endif
+
+  return word
+endf
+
 fu! ToggleSelection(...)
   noau
   let rev = (a:0 && (a:1 == -1))
+  " echo rev
+
   let lin = getline('.')
   let ccol = col('.') - 1
   let sel = lin[col("'<") - 1: col("'>") - 1]
   normal! "_ym`
+
+  " No multi-word, no blanks
+  if sel !~ '\S'
+    return
+  endif
 
   if sel =~ '^\d\+$'
     if rev
@@ -169,9 +240,12 @@ fu! ToggleSelection(...)
     return
   endif
 
-  " No multi-word, no blanks
-  if sel !~ '\S'
-    return
+  if sel =~ '\<[a-zA-Z]\>'
+    if rev
+      return RotLetter(1)
+    else
+      return RotLetter()
+    endif
   endif
 
   let a:case = (s:DetectCase(sel))
@@ -181,10 +255,15 @@ fu! ToggleSelection(...)
   endif
 
   " No toggle set for sel
-  if (index(values(g:toggledict), sel) == -1)
+  if (index(values(b:toggledict), sel) == -1) && (index(values(g:toggledict), sel) == -1)
     return
   else
-    let word = ((rev) ? (TogglePrevious(sel)) : (g:toggledict[sel]))
+    if (index(values(g:toggledict), sel) != -1)
+      let word = GetToggleWord(sel)
+    else
+      let word = ((rev) ? (TogglePrevious(sel)) : (g:toggledict[sel]))
+    endif
+
     if a:case =~? 'upper'
       let word = Upcase(word)
     elseif a:case =~? 'capitalized'
@@ -206,7 +285,7 @@ fu! ToggleWord(...)
 
   " hack. not sure why it goes to col 1
   if (col('.') == 1) && (getline('.')[0] =~ '\s')
-    call setpos('.', save_cursor)
+    call setpos('.', oldpos)
     normal! viw
   endif
 
