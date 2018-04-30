@@ -19,7 +19,7 @@ endf
 call InitToggleDict()
 
 fu! s:ToggleExist(s)
-  return (a:s =~ '\S') && (index(values(g:toggledict), a:s) != -1)
+  return (a:s =~ '\S') && (index(values(g:toggledict), Downcase(a:s)) != -1)
 endf
 
 fu! s:DetectCase(...)
@@ -32,6 +32,18 @@ fu! s:DetectCase(...)
   else " can't detect capitalization
     return 'lower'
   endif
+endf
+
+fu! Downcase(s)
+  return substitute(a:s, '.*', '\L&', '')
+endf
+
+fu! Upcase(s)
+  return substitute(a:s, '.*', '\U&', '')
+endf
+
+fu! Captialize(s)
+  return substitute(a:s, '\(.\)\(.*\)', '\u\1\L\2', '')
 endf
 
 fu! s:StripWhitespace(s)
@@ -65,14 +77,27 @@ fu! GetLastChange()
 endf
 
 fu! ToggleNew(a,b,flag)
+
   if a:flag == 0
     let g:toggledict[a:a] = a:b
     let g:toggledict[a:b] = a:a
   elseif a:flag == 1
-    let g:toggledict[a:b] = g:toggledict[a:a]
+    " if s:ToggleExist(g:toggledict[a:a])
+      let g:toggledict[a:b] = g:toggledict[a:a]
+    " else
+      " let g:toggledict[a:b] = a:a
+    " endif
     let g:toggledict[a:a] = a:b
   endif
 endf
+
+" fu! LinkedListDelete(dict, a, c)
+" YyyJjjUuuUuu
+"   let tempdict = {}
+"   return (a:s =~ '\S') && (index(values(g:toggledict), a:s) != -1)
+"   " if eval(dict."['".a:a."']")
+"   s:ToggleExist(a)
+" endf
 
 fu! ToggleAdd(...)
   if (a:0 >= 2)
@@ -84,11 +109,14 @@ fu! ToggleAdd(...)
   else
     return
   endif
+
+  let a = Downcase(a)
+  let b = Downcase(b)
   
   if a =~ '\s' " No multi-word toggles
     return
   endif
-  
+
   if !g:toggleopts['overwrite'] && s:ToggleExist(a) && s:ToggleExist(b)
     return
   elseif g:toggleopts['overwrite']
@@ -140,7 +168,7 @@ fu! ToggleSelection(...)
     endif
     return
   endif
-  
+
   " No multi-word, no blanks
   if sel !~ '\S'
     return
@@ -157,8 +185,12 @@ fu! ToggleSelection(...)
     return
   else
     let word = ((rev) ? (TogglePrevious(sel)) : (g:toggledict[sel]))
-    if a:case !~? 'lower'
-      let word = substitute(word, '\l\+', ((a:case =~? 'capitalized') ? '\u&' : '\U&'), '')
+    if a:case =~? 'upper'
+      let word = Upcase(word)
+    elseif a:case =~? 'capitalized'
+      let word = Captialize(word)
+    else
+      let word = Downcase(word)
     endif
 
     let prevcol = col('.')
@@ -169,9 +201,18 @@ endf
 command! -register ToggleSelection call ToggleSelection()
 
 fu! ToggleWord(...)
+  let oldpos = getcurpos()
   call InnerSubword()
+
+  " hack. not sure why it goes to col 1
+  if (col('.') == 1) && (getline('.')[0] =~ '\s')
+    call setpos('.', save_cursor)
+    normal! viw
+  endif
+
   call ToggleSelection(a:1)
 endf
+
 command! -register ToggleWord call ToggleWord(1)
 command! -register ToggleWordPrev call ToggleWord(-1)
 command! -register ToggleWordVisual call ToggleSelection(1)
