@@ -2,7 +2,7 @@
 A fast, easy word toggler.
 
 ## How it works
-When called, the current or nearest sub-word (camelCase, snake_case, or alpha/digit) is detected and used as a key to a dictionary containing complementary words. If you use the `c` command in (e.g. `ciw` or similar) to change a word to another, the words are added to the dictionary. If you change the new word again, the word is inserted into the toggle ring, so it will alternate between three (or more) words.
+When called, the current or nearest sub-word (camelCase, snake_case, or alpha/digit) is detected and used as a key to a dictionary containing complementary words. If you use the `c` command in (e.g. `ciw` or similar) to change a word to another, the words are added to the dictionary. If you change the new word again, the word is inserted into the toggle ring (circular linked list), so it will alternate between three (or more) words.
 
 If the subword is an integer, it simply uses vim's built in `<C-A>` increment. If a single letter is selected, the next letter alphabetically is used by default.
 
