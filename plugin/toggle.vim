@@ -34,24 +34,25 @@ fu! InitToggleDictFiletype()
   elseif &filetype =~ 'vim'
     call s:AddListBuf(g:togglewords_vim)
   endif
+  call extend(g:toggledict, b:toggledict, "keep")
 endf
 
 fu! InitToggleDict()
   call s:AddList(g:togglewords)
   call s:AddList(g:togglewords_universal)
   call s:AddList(g:togglepunct)
-  let b:toggledict = copy(g:toggledict)
+  call InitToggleDictFiletype()
 endf
-call InitToggleDict()
 
+call InitToggleDict()
+au FileType * call InitToggleDictFiletype()
+au BufRead * let b:toggledict = {}
 " au FileType *.vim call <SID>AddListBuf(g:togglewords_vim)
 " au FileType *.rb call <SID>AddListBuf(g:togglewords_ruby)
 " au FileType *.sh call <SID>AddListBuf(g:togglewords_shell)
 " au FileType *.zsh* call <SID>AddListBuf(g:togglewords_shell)
 " au FileType *.bash* call <SID>AddListBuf(g:togglewords_shell)
 " au FileType *.profile call <SID>AddListBuf(g:togglewords_shell)
-au FileType * call InitToggleDictFiletype()
-au BufRead * let b:toggledict = {}
 
 fu! s:ToggleExist(s)
   return (a:s =~ '\S') && (index(values(g:toggledict), Downcase(a:s)) != -1)
@@ -117,11 +118,7 @@ fu! ToggleNew(a,b,flag)
     let g:toggledict[a:a] = a:b
     let g:toggledict[a:b] = a:a
   elseif a:flag == 1
-    " if s:ToggleExist(g:toggledict[a:a])
-      let g:toggledict[a:b] = g:toggledict[a:a]
-    " else
-      " let g:toggledict[a:b] = a:a
-    " endif
+    let g:toggledict[a:b] = g:toggledict[a:a]
     let g:toggledict[a:a] = a:b
   endif
 endf
@@ -170,7 +167,6 @@ endf
 
 fu! TogglePrevious(w)
   call extend(b:toggledict, g:toggledict, "keep")
-
   if (index(values(g:toggledict), a:w) == -1)
     return a:w
   endif
@@ -259,9 +255,9 @@ fu! ToggleSelection(...)
     return
   else
     if (index(values(g:toggledict), sel) != -1)
-      let word = GetToggleWord(sel)
+      let word = (rev) ? (TogglePrevious(sel)) : (GetToggleWord(sel))
     else
-      let word = ((rev) ? (TogglePrevious(sel)) : (g:toggledict[sel]))
+      let word = (rev) ? (TogglePrevious(sel)) : (g:toggledict[sel])
     endif
 
     if a:case =~? 'upper'
