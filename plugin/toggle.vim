@@ -6,6 +6,7 @@ endif
 let s:path = resolve(expand('<sfile>:p'))
 exe 'so '.substitute(s:path, '\.vim$', '_words.vim', '')
 exe 'so '.substitute(s:path, '\.vim$', '_subword.vim', '')
+exe 'so '.substitute(s:path, '\.vim$', '_lcs.vim', '')
 
 fu! s:AddList(list)
   for i in a:list
@@ -38,15 +39,20 @@ fu! InitToggleDictFiletype()
 endf
 
 fu! InitToggleDict()
+  call s:AddList(g:togglepunct)
+  " if exists('g:toggledict')
+  "   return
+  " endif
+
   call s:AddList(g:togglewords)
   call s:AddList(g:togglewords_universal)
-  call s:AddList(g:togglepunct)
+  
   call InitToggleDictFiletype()
 endf
 
-call InitToggleDict()
+au VimEnter * call InitToggleDict()
 au FileType * call InitToggleDictFiletype()
-au BufRead * let b:toggledict = {}
+
 " au FileType *.vim call <SID>AddListBuf(g:togglewords_vim)
 " au FileType *.rb call <SID>AddListBuf(g:togglewords_ruby)
 " au FileType *.sh call <SID>AddListBuf(g:togglewords_shell)
@@ -113,7 +119,6 @@ fu! GetLastChange()
 endf
 
 fu! ToggleNew(a,b,flag)
-
   if a:flag == 0
     let g:toggledict[a:a] = a:b
     let g:toggledict[a:b] = a:a
@@ -152,6 +157,7 @@ fu! ToggleAdd(...)
   endif
   return ToggleNew(a,b,0)
 endf
+
 au InsertLeave * call ToggleAdd()
 
 fu! ToggleFindBrute(key,ar)
@@ -198,7 +204,6 @@ RB
 endf
  
 fu! GetToggleWord(sel)
-
   if (index(values(b:toggledict), a:sel) != -1)
     " let word = ((rev) ? (TogglePrevious(a:sel)) : (b:toggledict[a:sel]))
     let word = b:toggledict[a:sel]
@@ -243,6 +248,7 @@ fu! ToggleSelection(...)
       return RotLetter()
     endif
   endif
+
 
   let a:case = (s:DetectCase(sel))
 

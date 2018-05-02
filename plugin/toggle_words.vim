@@ -86,6 +86,7 @@ let g:togglewords = [
       \['parent', 'child'],
       \['prefix', 'suffix'],
       \['previous', 'next'],
+      \['pre', 'post'],
       \['public', 'private'],
       \['req', 'res'],
       \['request', 'response'],
@@ -103,9 +104,10 @@ let g:togglewords = [
       \['malloc', 'calloc', 'free'],
       \['nan', 'inf'],
       \['red', 'orange', 'yellow',  'green', 'cyan', 'blue',  'purple', 'magenta'],
-      \['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-      \'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
       \]
+
+      " \['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+      " \'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
 
 let g:togglewords_vim = [
       \['fu', 'endf'],
@@ -131,7 +133,7 @@ let g:togglewords_ruby = [
       \]
 
 let g:togglewords_shell = [
-      \['if', 'endif', 'fi'],
+      \['if', 'elif', 'else', 'fi'],
       \['case', 'esac'],
       \['for', 'done'],
       \['while', 'done'],
