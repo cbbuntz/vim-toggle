@@ -249,12 +249,13 @@ fu! ToggleSelection(...)
     endif
   endif
 
-
   let a:case = (s:DetectCase(sel))
 
+  let oldsel = sel
   if g:toggleopts['ignorecase']
     let sel = substitute(sel, '\u', '\L&', 'g')
   endif
+
 
   " No toggle set for sel
   if (index(values(b:toggledict), sel) == -1) && (index(values(g:toggledict), sel) == -1)
@@ -275,7 +276,7 @@ fu! ToggleSelection(...)
     endif
 
     let prevcol = col('.')
-    exe 'silent! :s;\(\%#\V' . sel . '\);' . substitute(word, '&', '\\\&', 'g') . ';'
+    exe 'silent! :s;\(\%#\V' . oldsel . '\);' . substitute(word, '&', '\\\&', 'g') . ';'
     exe 'normal! '.prevcol.'|'
   endif
 endf

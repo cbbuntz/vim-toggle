@@ -31,6 +31,8 @@ let g:togglewords_universal = [
       \['minimum', 'maximum'],
       \['zero',  'one',  'two',  'three',  'four',  'five',  'six',  'seven',  'eight',  'nine',  'ten',
       \'eleven',  'twelve',  'thirteen', 'fourteen',  'fifteen',  'sixteen',  'seventeen',  'eighteen',  'nineteen'],
+      \['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
+      \['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
       \['in', 'out'],
       \['lower', 'upper'],
       \['positive', 'negative'],

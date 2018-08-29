@@ -1,10 +1,11 @@
-let s:subwordexp = '\u\l\@=\|\u\l\@=\|\A\@<=\a\|\a\A\@=\|\D\@<=\d\|\d\D\@=\|\s\@<=\S\|\S\s\@=\|\S$\|^.\|.$'
-let s:subwordbegin = '\l\@<=\u\|\(\u\{2}\)\@<=\l\|\A\@<=\a\|\D\@<=\d\|\s\@<=\S\|\<\|^.'
-let s:subwordend = '\l\u\@=\|\(\u\@<=\u\l\@=\)\|\a\A\@=\|\d\D\@=\|\S\s\@=\|\S$\|\>\|.$'
-let s:WORDboundary = '\_s\@<=\S\|\S\_s\@=\|^\S'
-let s:wordboundary = '\W\@<=\w\|\w\W\@=\|^\w\|\w$\|\<\|\>'
-let s:whitespaceboundary = '\S\@<=\s\|\s\S\@=\|^\s\|\s$'
-let s:punct = '[!<>+\-=&|]\{3,}\|[!<>+\-=&|]\{2}\|()\|\[\]\|{}\|.'
+let g:subwordexp = '\u\l\@=\|\u\l\@=\|\A\@<=\a\|\a\A\@=\|\D\@<=\d\|\d\D\@=\|\s\@<=\S\|\S\s\@=\|\S$\|^.\|.$'
+let g:subwordbegin = '\l\@<=\u\|\(\u\{2}\)\@<=\l\|\A\@<=\a\|\D\@<=\d\|\s\@<=\S\|\<\|^.'
+let g:subwordstart = '\l\@<=\u\|\(\u\{2}\)\@<=\l\|\A\@<=\a\|\D\@<=\d\|\s\@<=\S\|\<\|^.'
+let g:subwordend = '\l\u\@=\|\(\u\@<=\u\l\@=\)\|\a\A\@=\|\d\D\@=\|\S\s\@=\|\S$\|\>\|.$'
+let g:WORDboundary = '\_s\@<=\S\|\S\_s\@=\|^\S'
+let g:wordboundary = '\W\@<=\w\|\w\W\@=\|^\w\|\w$\|\<\|\>'
+let g:whitespaceboundary = '\S\@<=\s\|\s\S\@=\|^\s\|\s$'
+let g:punct = '[!<>+\-=&|]\{3,}\|[!<>+\-=&|]\{2}\|()\|\[\]\|{}\|.'
 
 fu! VisualSubwordExpand() range
   noau
@@ -14,7 +15,7 @@ fu! VisualSubwordExpand() range
   let rppos = getpos("'>")
   
   if search("\\%'>\\%#\\_.\\{2}",'neW')
-    call search(s:subwordend,'')
+    call search(g:subwordend,'')
     call setpos("'>", getcurpos())
     call setpos("'<", lppos)
     let @/ = pq
@@ -23,7 +24,7 @@ fu! VisualSubwordExpand() range
   endif
 
   if search("\\_.\\%#\\%'<",'nbcW')
-    call search(s:subwordbegin,'b')
+    call search(g:subwordbegin,'b')
     call setpos("'<", getcurpos())
     call setpos("'>", rppos)
     let @/ = pq
@@ -66,11 +67,11 @@ endf
       
 fun! Subword(direction, boundary,...)
     if (a:boundary == 1)
-        let e = s:subwordbegin
+        let e = g:subwordbegin
     elseif (a:boundary == -1)
-        let e = s:subwordend
+        let e = g:subwordend
     else " kitchen sink
-        let e = s:subwordbegin .'\|'. s:subwordend .'\|'.s:wordboundary.'\|'.s:WORDboundary.'\|'.s:whitespaceboundary
+        let e = g:subwordbegin .'\|'. g:subwordend .'\|'.s:wordboundary.'\|'.s:WORDboundary.'\|'.s:whitespaceboundary
     endif
     let direction = (a:direction == -1) ? 'b' :
                 \( (a:direction == 1) ? '' : (a:direction))
