@@ -19,7 +19,7 @@ RB
 endf
 
 fu! KeyMatch(str)
-  let keys = keys(b:toggledict)
+  let keys = keys(g:toggledict)
   call filter(keys, 'len(v:val) > 0')
   return filter(keys, '(a:str =~? v:val) || (a:str =~? v:val)')
 endf

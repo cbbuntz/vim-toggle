@@ -19,14 +19,14 @@ endf
 fu! s:AddListBuf(list)
   for i in a:list
     for j in range(0,len(i)-1)
-      let b:toggledict[i[j-1]] = i[j]
+      let g:toggledict[i[j-1]] = i[j]
     endfor
   endfor
 endf
 
 fu! InitToggleDictFiletype()
-  if !(exists('b:toggledict'))
-    let b:toggledict = copy(g:toggledict)
+  if !(exists('g:toggledict'))
+    let g:toggledict = copy(g:toggledict)
   endif
   if &filetype =~ 'sh\|bash\|zsh\|profile'
     call s:AddListBuf(g:togglewords_shell)
@@ -35,7 +35,7 @@ fu! InitToggleDictFiletype()
   elseif &filetype =~ 'vim'
     call s:AddListBuf(g:togglewords_vim)
   endif
-  call extend(g:toggledict, b:toggledict, "keep")
+  call extend(g:toggledict, g:toggledict, "keep")
 endf
 
 fu! InitToggleDict()
@@ -172,7 +172,7 @@ fu! ToggleFindBrute(key,ar)
 endf
 
 fu! TogglePrevious(w)
-  call extend(b:toggledict, g:toggledict, "keep")
+  call extend(g:toggledict, g:toggledict, "keep")
   if (index(values(g:toggledict), a:w) == -1)
     return a:w
   endif
@@ -204,9 +204,9 @@ RB
 endf
  
 fu! GetToggleWord(sel)
-  if (index(values(b:toggledict), a:sel) != -1)
-    " let word = ((rev) ? (TogglePrevious(a:sel)) : (b:toggledict[a:sel]))
-    let word = b:toggledict[a:sel]
+  if (index(values(g:toggledict), a:sel) != -1)
+    " let word = ((rev) ? (TogglePrevious(a:sel)) : (g:toggledict[a:sel]))
+    let word = g:toggledict[a:sel]
   elseif (index(values(g:toggledict), a:sel) != -1)
     " let word = ((rev) ? (TogglePrevious(a:sel)) : (g:toggledict[a:sel]))
     let word = g:toggledict[a:sel]
@@ -258,7 +258,7 @@ fu! ToggleSelection(...)
 
 
   " No toggle set for sel
-  if (index(values(b:toggledict), sel) == -1) && (index(values(g:toggledict), sel) == -1)
+  if (index(values(g:toggledict), sel) == -1) && (index(values(g:toggledict), sel) == -1)
     return
   else
     if (index(values(g:toggledict), sel) != -1)
