@@ -6,7 +6,7 @@ When called, the current or nearest sub-word (camelCase, snake_case, or alpha/di
 
 If the subword is an integer, it simply uses vim's built in `<C-A>` increment. If a single letter is selected, the next letter alphabetically is used by default.
 
-Extra sub-word motions are included since most of the stuff was already required for this script, and they are very useful.
+Extra sub-word motions are included since most of the stuff was already required for this script, and I think you will find that they are useful.
 
 ## Notes
 A dictionary is included for common words, but is automatically updated as you work. If either the newly typed word or previous word are not found in the dictionary, they are inserted into to a toggle ring. If they both exist, nothing is updated. You can enable overwriting of dictionary entries with `let g:toggleopts['overwrite'] = 1`, which also has the side effect making all new toggles binary. The digit increment will not be overridden, but the single letter increments will be replaced.
