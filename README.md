@@ -21,7 +21,7 @@ You can also update toggles with most recent deletion / yank with `<leader><M-t>
 
 If normal mode does not work for toggles that cannot be detected by the sub-word detection (e.g. it contains letters and punctuation), then selecting the text in visual mode first should work.
 
-The list of words is contained in `plugin/toggle_words.vim` if you wish to modify or add your own entries.
+The list of words is contained in `autoload/vim-toggle.vim` if you wish to modify or add your own entries.
 
 ## Default mappings
     
