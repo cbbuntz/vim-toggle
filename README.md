@@ -6,7 +6,7 @@ When called, the current or nearest sub-word (camelCase, snake_case, or alpha/di
 
 If the subword is an integer, it simply uses vim's built in `<C-A>` increment. If a single letter is selected, the next letter alphabetically is used by default.
 
-Extra sub-word motions are included since most of the stuff was already required for this script, and I think you will find that they are useful.
+Extra sub-word motions are included since most of the stuff was already required for this script, and they are very useful.
 
 ## Notes
 A dictionary is included for common words, but is automatically updated as you work. If either the newly typed word or previous word are not found in the dictionary, they are inserted into to a toggle ring. If they both exist, nothing is updated. You can enable overwriting of dictionary entries with `let g:toggleopts['overwrite'] = 1`, which also has the side effect making all new toggles binary. The digit increment will not be overridden, but the single letter increments will be replaced.
@@ -21,7 +21,7 @@ You can also update toggles with most recent deletion / yank with `<leader><M-t>
 
 If normal mode does not work for toggles that cannot be detected by the sub-word detection (e.g. it contains letters and punctuation), then selecting the text in visual mode first should work.
 
-The list of words is contained in `autoload/vim-toggle.vim` if you wish to modify or add your own entries.
+The list of words is contained in `plugin/toggle_words.vim` if you wish to modify or add your own entries.
 
 ## Default mappings
     
