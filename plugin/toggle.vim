@@ -1,12 +1,3 @@
-let g:toggleopts = {'overwrite': 0, 'ignorecase': 1}
-if !(exists('g:toggledict'))
-  let g:toggledict = {}
-endif
-
-let s:path = resolve(expand('<sfile>:p'))
-exe 'so '.substitute(s:path, '\.vim$', '_words.vim', '')
-exe 'so '.substitute(s:path, '\.vim$', '_subword.vim', '')
-exe 'so '.substitute(s:path, '\.vim$', '_lcs.vim', '')
 
 fu! s:AddList(list)
   for i in a:list
@@ -46,7 +37,7 @@ fu! InitToggleDict()
 
   call s:AddList(g:togglewords)
   call s:AddList(g:togglewords_universal)
-  
+
   call InitToggleDictFiletype()
 endf
 
@@ -294,21 +285,3 @@ fu! ToggleWord(...)
 
   call ToggleSelection(a:1)
 endf
-
-command! -register ToggleWord call ToggleWord(1)
-command! -register ToggleWordPrev call ToggleWord(-1)
-command! -register ToggleWordVisual call ToggleSelection(1)
-command! -register ToggleWordPrevVisual call ToggleSelection(-1)
-
-nmap <Plug>ToggleWord :ToggleWord<CR>
-nmap <Plug>ToggleWordPrev :ToggleWordPrev<CR>
-vmap <Plug>ToggleWord :<C-u>ToggleWordVisual<CR>
-vmap <Plug>ToggleWordPrev :<C-u>ToggleWordPrevVisual<CR>
-
-nnoremap <silent> <M-t> :ToggleWord<CR>
-nnoremap <silent> <M-T> :ToggleWordPrev<CR>
-nnoremap <silent> <leader><M-t> :call ToggleAdd(@0, @-)<CR>
-vnoremap <silent> <M-t> :<C-u>ToggleWordVisual<CR>
-vnoremap <silent> <M-T> :<C-u>ToggleWordPrevVisual<CR>
-" vnoremap <silent> p p:call ToggleAdd(@0, @-)<CR>
-
